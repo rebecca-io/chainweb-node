@@ -166,6 +166,10 @@ library
         , Data.CAS
         , Data.CAS.HashMap
         , Data.CAS.RocksDB
+        , Data.DegreeDiamSolutions.Degree5Diam5Order624
+        , Data.DegreeDiamSolutions.Degree6Diam5Order1404
+        , Data.DegreeDiamSolutions.Degree7Diam6Order11988
+        , Data.DegreeDiamSolutions.Degree8Diam4Order1100
         , Data.DiGraph
         , Data.DiGraph.FloydWarshall
         , Data.IVar

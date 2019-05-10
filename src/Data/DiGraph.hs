@@ -48,6 +48,10 @@ module Data.DiGraph
 , petersonGraph
 , twentyChainGraph
 , hoffmanSingleton
+, dds624
+, dds1404
+, dds11988
+, dds1100
 
 -- * Properties
 , order
@@ -105,6 +109,10 @@ import Test.QuickCheck
 -- internal modules
 
 import qualified Data.DiGraph.FloydWarshall as FW
+import qualified Data.DegreeDiamSolutions.Degree5Diam5Order624 as DDS624
+import qualified Data.DegreeDiamSolutions.Degree6Diam5Order1404 as DDS1404
+import qualified Data.DegreeDiamSolutions.Degree7Diam6Order11988 as DDS11988
+import qualified Data.DegreeDiamSolutions.Degree8Diam4Order1100 as DDS1100
 
 -- -------------------------------------------------------------------------- --
 -- Utils
@@ -323,6 +331,19 @@ hoffmanSingleton = pentagons `union` pentagrams `union` connections
         , let b = q_off i ((h * i + j) `mod` 5)
         ]
 
+-- Degree Diam Solutions
+
+dds624 :: DiGraph Int
+dds624 = DiGraph DDS624.bestKnownGraph
+
+dds1404 :: DiGraph Int
+dds1404 = DiGraph DDS1404.bestKnownGraph
+
+dds11988 :: DiGraph Int
+dds11988 = DiGraph DDS11988.bestKnownGraph
+
+dds1100 :: DiGraph Int
+dds1100 = DiGraph DDS1100.bestKnownGraph
 -- -------------------------------------------------------------------------- --
 -- Properties
 
