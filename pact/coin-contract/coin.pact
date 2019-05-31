@@ -102,11 +102,10 @@
 
   (defun account-balance:decimal (account:string)
     @doc "Query account balance for ACCOUNT"
-    (with-capability (ACCOUNT_GUARD account)
-      (with-read coin-table account
-        { "balance" := balance }
-        balance
-        ))
+
+    (with-read coin-table account
+      { "balance" := balance }
+      balance)
     )
 
   (defun transfer:string (sender:string receiver:string receiver-guard:guard amount:decimal)
@@ -184,7 +183,7 @@
          \consume the proof on CREATE-CHAIN-ID, crediting CREATE-ACCOUNT        \
          \QUANTITY-many coins."
 
-    @model [(property (> amount 0.0))]
+    @model [(property (> quantity 0.0))]
 
     (with-capability (TRANSFER)
       (debit delete-account quantity)
