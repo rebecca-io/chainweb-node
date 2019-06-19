@@ -137,13 +137,13 @@ withChainResources v cid rdb peer logger mempoolCfg cdbv payloadDb inner =
             logg Info "start pruning block header database"
             x <- pruneForks logger cdb (diam * 3) $ \h payloadInUse ->
                 unless payloadInUse
-                    $ casDelete (fromJuste payloadDb) (_blockPayloadHash h)
+                    $ casDelete (fromJuste payloadDb) (_chainwebBlockPayloadHash h)
             logg Info $ "finished pruning block header database. Deleted " <> sshow x <> " block headers."
 
             -- replay pact
             let pact = pes mempool requestQ
             -- payloadStore is only 'Nothing' in some unit tests not using this code
-            replayPact logger pact cdb $ fromJust payloadDb
+            replayPact logger pact cdb $ fromJuste payloadDb
 
             -- run inner
             inner $ ChainResources
@@ -158,9 +158,9 @@ withChainResources v cid rdb peer logger mempoolCfg cdbv payloadDb inner =
     diam = diameter (_chainGraph v)
     reIntroEnabled = Mempool._inmemEnableReIntro mempoolCfg
     pes mempool requestQ = case v of
-        Test{} -> emptyPactExecutionService
-        TimedConsensus{} -> emptyPactExecutionService
-        PowConsensus{} -> emptyPactExecutionService
+        Test{} -> emptyPactExecutionService v cid
+        TimedConsensus{} -> emptyPactExecutionService v cid
+        PowConsensus{} -> emptyPactExecutionService v cid
         TimedCPM{} -> mkPactExecutionService mempool requestQ
         Testnet00 -> mkPactExecutionService mempool requestQ
         Testnet01 -> mkPactExecutionService mempool requestQ
@@ -186,7 +186,7 @@ replayPact logger pact cdb pdb = do
         & S.mapM_ (\h -> payload h >>= _pactValidateBlock pact h)
     logg Info $ "finished replaying " <> sshow l <> " pact transactions"
   where
-    payload h = casLookup pdb (_blockPayloadHash h) >>= \case
+    payload h = casLookup pdb (_chainwebBlockPayloadHash h) >>= \case
         Nothing -> do
             logg Error $ "Corrupted database: failed to load payload data for block header " <> sshow h
             error $ "Corrupted database: failed to load payload data for block header " <> sshow h

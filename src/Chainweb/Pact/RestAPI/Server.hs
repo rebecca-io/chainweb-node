@@ -299,8 +299,8 @@ lookupRequestKeyInBlock cutR chain bloomCache key minHeight = go
           else lookupParent blockHeader
 
     lookupInPayload blockHeader = do
-        let payloadHash = _blockPayloadHash blockHeader
-        (PayloadWithOutputs txsBs _ _ _ _ _) <- MaybeT $ casLookup pdb payloadHash
+        let payloadHash = _chainwebBlockPayloadHash blockHeader
+        (PayloadWithOutputs txsBs _ _ _ _ _ _ _) <- MaybeT $ casLookup pdb payloadHash
         !txs <- mapM fromTx txsBs
 
         case find matchingHash txs of

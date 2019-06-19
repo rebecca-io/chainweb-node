@@ -210,7 +210,7 @@ getBlockPayload
     -> IO PayloadData
 getBlockPayload s priority maybeOrigin h = do
     logfun Debug $ "getBlockPayload: " <> sshow h
-    casLookup cas payloadHash >>= \case
+    casLookup cas cwPayloadHash >>= \case
         (Just !x) -> return $! payloadWithOutputsToPayloadData x
         Nothing -> memo memoMap payloadHash $ \k ->
             pullOrigin k maybeOrigin >>= \case
@@ -223,6 +223,7 @@ getBlockPayload s priority maybeOrigin h = do
   where
     v = _chainwebVersion h
     payloadHash = _blockPayloadHash h
+    cwPayloadHash = _chainwebBlockPayloadHash h
     cid = _chainId h
 
     mgr = _webBlockPayloadStoreMgr s

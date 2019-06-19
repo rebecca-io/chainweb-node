@@ -163,7 +163,7 @@ syncPact cutDb pact =
   where
     bhdb = view cutDbWebBlockHeaderDb cutDb
     pdb = view cutDbPayloadCas cutDb
-    payload h = casLookup pdb (_blockPayloadHash h) >>= \case
+    payload h = casLookup pdb (_chainwebBlockPayloadHash h) >>= \case
         Nothing -> error $ "Corrupted database: failed to load payload data for block header " <> sshow h
         Just p -> return $ payloadWithOutputsToPayloadData p
 
@@ -474,11 +474,20 @@ randomTransaction cutDb = do
 fakePact :: WebPactExecutionService
 fakePact = WebPactExecutionService $ PactExecutionService
   { _pactValidateBlock =
-      \_ d -> return
-              $ payloadWithOutputs d coinbase $ getFakeOutput <$> _payloadDataTransactions d
-  , _pactNewBlock = \_ _ -> do
+      \h d -> return $ payloadWithOutputs
+            (_chainwebVersion h)
+            (_chainId h)
+            d
+            coinbase
+            (getFakeOutput <$> _payloadDataTransactions d)
+  , _pactNewBlock = \_ h -> do
         payload <- generate $ Seq.fromList . getNonEmpty <$> arbitrary
-        return $ newPayloadWithOutputs fakeMiner coinbase payload
+        return $ newPayloadWithOutputs
+            (_chainwebVersion h)
+            (_chainId h)
+            fakeMiner
+            coinbase
+            payload
 
   , _pactLocal = \_t -> error "Unimplemented"
   }

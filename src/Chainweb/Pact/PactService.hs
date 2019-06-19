@@ -70,7 +70,7 @@ import qualified Pact.Types.SPV as P
 import Chainweb.BlockHash
 import Chainweb.BlockHeader
     (BlockHeader(..), BlockHeight(..), isGenesisBlockHeader)
-import Chainweb.ChainId (ChainId)
+import Chainweb.ChainId (ChainId, _chainId)
 import Chainweb.CutDB (CutDb)
 import Chainweb.Logger
 import Chainweb.Pact.Backend.InMemoryCheckpointer (initInMemoryCheckpointEnv)
@@ -84,7 +84,7 @@ import Chainweb.Pact.Utils (toEnv', toEnvPersist')
 import Chainweb.Payload
 import Chainweb.Transaction
 import Chainweb.Utils
-import Chainweb.Version (ChainwebVersion(..))
+import Chainweb.Version (ChainwebVersion(..), _chainwebVersion)
 
 -- genesis block (temporary)
 
@@ -232,8 +232,8 @@ toOutputBytes cr =
 
 
 
-toPayloadWithOutputs :: MinerInfo -> Transactions -> PayloadWithOutputs
-toPayloadWithOutputs mi ts =
+toPayloadWithOutputs :: ChainwebVersion -> ChainId -> MinerInfo -> Transactions -> PayloadWithOutputs
+toPayloadWithOutputs v cid mi ts =
     let oldSeq = Seq.fromList $ V.toList $ _transactionPairs ts
         trans = fst <$> oldSeq
         transOuts = toOutputBytes . snd <$> oldSeq
@@ -245,7 +245,7 @@ toPayloadWithOutputs mi ts =
 
         blockPL = blockPayload blockTrans blockOuts
         plData = payloadData blockTrans blockPL
-     in payloadWithOutputs plData cb transOuts
+     in payloadWithOutputs v cid plData cb transOuts
 
 
 validateHashes :: PayloadWithOutputs -> BlockHeader -> Either PactException PayloadWithOutputs
@@ -287,6 +287,8 @@ execNewBlock
 execNewBlock mpAccess header miner = do
     let bHeight@(BlockHeight bh) = _blockHeight header
         bHash = _blockHash header
+        cid = _chainId header
+        v = _chainwebVersion header
 
     logDebug $ "execNewBlock, about to get call processFork: "
            <> " (height = " <> sshow bHeight <> ")"
@@ -305,13 +307,18 @@ execNewBlock mpAccess header miner = do
       execTransactions (Just bHash) miner newTrans
 
     discardCheckpointer
-    return $! toPayloadWithOutputs miner results
+    return $! toPayloadWithOutputs v cid miner results
 
 
 
 -- | only for use in generating genesis blocks in tools
-execNewGenesisBlock :: MinerInfo -> Vector ChainwebTransaction -> PactServiceM PayloadWithOutputs
-execNewGenesisBlock miner newTrans = do
+execNewGenesisBlock
+    :: ChainwebVersion
+    -> ChainId
+    -> MinerInfo
+    -> Vector ChainwebTransaction
+    -> PactServiceM PayloadWithOutputs
+execNewGenesisBlock v cid miner newTrans = do
 
     restoreCheckpointer Nothing
 
@@ -319,7 +326,7 @@ execNewGenesisBlock miner newTrans = do
 
     discardCheckpointer
 
-    return $! toPayloadWithOutputs miner results
+    return $! toPayloadWithOutputs v cid miner results
 
 
 execLocal :: ChainwebTransaction ->
@@ -377,6 +384,8 @@ execValidateBlock mpAccess loadingGenesis currHeader plData = do
         !bHash = _blockHash currHeader
         !bParent = _blockParent currHeader
         !isGenesisBlock = isGenesisBlockHeader currHeader
+        !cid = _chainId currHeader
+        !v = _chainwebVersion currHeader
 
     logDebug $ "execValidateBlock, about to get call setLastHeader: "
         <> " (height = " <> sshow bHeight <> ")"
@@ -397,7 +406,7 @@ execValidateBlock mpAccess loadingGenesis currHeader plData = do
 
     finalizeCheckpointer $ \cp s -> save cp bHeight bHash s
     psStateValidated .= Just currHeader
-    return $! toPayloadWithOutputs miner results
+    return $! toPayloadWithOutputs v cid miner results
 
 
 execTransactions :: Maybe BlockHash -> MinerInfo -> Vector ChainwebTransaction ->

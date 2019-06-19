@@ -82,6 +82,8 @@ module Chainweb.BlockHeader
 , blockPow
 , _blockAdjacentChainIds
 , blockAdjacentChainIds
+, _chainwebBlockPayloadHash
+, chainwebBlockPayloadHash
 , encodeBlockHeader
 , encodeBlockHeaderWithoutHash
 , decodeBlockHeader
@@ -623,6 +625,17 @@ _blockPow h = powHash (_blockChainwebVersion h)
 blockPow :: Getter BlockHeader PowHash
 blockPow = to _blockPow
 {-# INLINE blockPow #-}
+
+_chainwebBlockPayloadHash :: BlockHeader -> ChainwebBlockPayloadHash
+_chainwebBlockPayloadHash bh = ChainwebBlockPayloadHash
+    (_blockPayloadHash bh)
+    (_chainId bh)
+    (_chainwebVersion bh)
+{-# INLINE _chainwebBlockPayloadHash #-}
+
+chainwebBlockPayloadHash :: Getter BlockHeader ChainwebBlockPayloadHash
+chainwebBlockPayloadHash = to _chainwebBlockPayloadHash
+{-# INLINE chainwebBlockPayloadHash #-}
 
 -- -------------------------------------------------------------------------- --
 -- Object JSON encoding

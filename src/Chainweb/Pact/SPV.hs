@@ -144,7 +144,7 @@ getTxIdx
     -> IO (Either Text Int)
 getTxIdx bdb pdb bh th = do
     -- get BlockPayloadHash
-    ph <- fmap (fmap _blockPayloadHash)
+    ph <- fmap (fmap _chainwebBlockPayloadHash)
         $ entries bdb Nothing (Just 1) (Just $ int bh) Nothing S.head_
         >>= pure . note "unable to find payload associated with transaction hash"
 

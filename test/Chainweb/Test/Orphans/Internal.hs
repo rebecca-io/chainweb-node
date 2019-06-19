@@ -166,4 +166,5 @@ instance Arbitrary PayloadData where
     arbitrary = newPayloadData <$> arbitrary <*> arbitrary
 
 instance Arbitrary PayloadWithOutputs where
-    arbitrary = newPayloadWithOutputs <$> arbitrary <*> arbitrary <*> arbitrary
+    arbitrary = newPayloadWithOutputs
+        <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary

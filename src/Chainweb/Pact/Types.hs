@@ -73,10 +73,12 @@ import Pact.Types.Term (KeySet(..), Name(..))
 
 import Chainweb.BlockHash
 import Chainweb.BlockHeader
+import Chainweb.ChainId
 import Chainweb.Pact.Backend.Types
 import Chainweb.Payload
 import Chainweb.Transaction
 import Chainweb.Utils
+import Chainweb.Version
 
 type HashCommandResult = CommandResult H.Hash
 
@@ -102,8 +104,8 @@ instance FromJSON MinerInfo where
   parseJSON = withObject "MinerInfo" $ \o ->
     MinerInfo <$> o .: "m" <*> (KeySet <$> o .: "ks" <*> o .: "kp")
 
-emptyPayload :: PayloadWithOutputs
-emptyPayload = PayloadWithOutputs mempty miner coinbase h i o
+emptyPayload :: ChainwebVersion -> ChainId -> PayloadWithOutputs
+emptyPayload v cid = PayloadWithOutputs mempty miner coinbase h i o cid v
   where
     (BlockPayload h i o) = newBlockPayload miner coinbase mempty
     miner = MinerData $ encodeToByteString noMiner

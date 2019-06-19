@@ -179,7 +179,7 @@ payloadLookup payloadStore bh =
     case payloadStore of
         Nothing -> return mempty
         Just s -> do
-            pwo <- casLookupM' s (_blockPayloadHash bh)
+            pwo <- casLookupM' s (_chainwebBlockPayloadHash bh)
             chainwebTxsFromPWO pwo
   where
     casLookupM' s h = do

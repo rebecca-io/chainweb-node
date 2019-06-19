@@ -74,6 +74,7 @@ module Chainweb.Payload
 , newPayloadData
 
 -- * All Payload Data in a Single Structure
+, ChainwebBlockPayloadHash(..)
 , PayloadWithOutputs(..)
 , payloadWithOutputs
 , newPayloadWithOutputs
@@ -103,10 +104,12 @@ import GHC.Generics
 
 -- internal modules
 
+import Chainweb.ChainId
 import Chainweb.Crypto.MerkleLog
 import Chainweb.MerkleLogHash
 import Chainweb.MerkleUniverse
 import Chainweb.Utils
+import Chainweb.Version
 
 import Data.CAS
 
@@ -381,8 +384,6 @@ instance HasTextRepresentation MinerData where
 
 -- -------------------------------------------------------------------------- --
 -- Block Transactions
-
-
 
 -- | The block transactions
 --
@@ -746,8 +747,13 @@ newPayloadData :: BlockTransactions -> BlockOutputs -> PayloadData
 newPayloadData txs outputs = payloadData txs $ blockPayload txs outputs
 
 -- -------------------------------------------------------------------------- --
--- All Payload Data in a Single Structure
-
+-- | All Payload Data in a Single Structure
+--
+-- This structure is used to serialize block payloads for storage and transfer.
+-- In addition to the payload data itself, the structure is also annotated with
+-- the ChainId and the ChainwebVersion. This puts the data in a context for
+-- deserialization.
+--
 data PayloadWithOutputs = PayloadWithOutputs
     { _payloadWithOutputsTransactions :: !(S.Seq (Transaction, TransactionOutput))
     , _payloadWithOutputsMiner :: !MinerData
@@ -755,39 +761,72 @@ data PayloadWithOutputs = PayloadWithOutputs
     , _payloadWithOutputsPayloadHash :: !BlockPayloadHash
     , _payloadWithOutputsTransactionsHash :: !BlockTransactionsHash
     , _payloadWithOutputsOutputsHash :: !BlockOutputsHash
+    , _payloadWithOutputsChainId :: !ChainId
+        -- ^ This field is not included in the 'BlockPayloadHash'. It is
+        -- provided as context for deserialization.
+    , _payloadWithOutputsChainwebVersion :: !ChainwebVersion
+        -- ^ This field is not included in the 'BlockPayloadHash'. It is
+        -- provided as context for deserialization.
     } deriving (Show)
 
+-- | The CAS key for 'PayloadWithOutputs'. It is just a 'BlockPayloadHash'
+-- augmented with the 'ChainwebVersion' and the 'ChainId'.
+--
+-- The encoding is hash table and map friendly by moving entropy to the front.
+--
+data ChainwebBlockPayloadHash = ChainwebBlockPayloadHash
+    !BlockPayloadHash
+    !ChainId
+    !ChainwebVersion
+    deriving (Show, Eq, Ord, Generic)
+    deriving anyclass (NFData)
+
+instance Hashable ChainwebBlockPayloadHash where
+    hashWithSalt s (ChainwebBlockPayloadHash k c v)
+        = s `hashWithSalt` k `hashWithSalt` c `hashWithSalt` v
+
 instance IsCasValue PayloadWithOutputs where
-    type CasKeyType PayloadWithOutputs = BlockPayloadHash
-    casKey = _payloadWithOutputsPayloadHash
+    type CasKeyType PayloadWithOutputs = ChainwebBlockPayloadHash
+    casKey x = ChainwebBlockPayloadHash
+        (_payloadWithOutputsPayloadHash x)
+        (_payloadWithOutputsChainId x)
+        (_payloadWithOutputsChainwebVersion x)
     {-# INLINE casKey #-}
 
 payloadWithOutputs
-    :: PayloadData
+    :: ChainwebVersion
+    -> ChainId
+    -> PayloadData
     -> CoinbaseOutput
     -> S.Seq TransactionOutput
     -> PayloadWithOutputs
-payloadWithOutputs d co outputs = PayloadWithOutputs
+payloadWithOutputs v cid d co outputs = PayloadWithOutputs
     { _payloadWithOutputsTransactions = S.zip (_payloadDataTransactions d) outputs
     , _payloadWithOutputsMiner = _payloadDataMiner d
     , _payloadWithOutputsCoinbase = co
     , _payloadWithOutputsPayloadHash = _payloadDataPayloadHash d
     , _payloadWithOutputsTransactionsHash = _payloadDataTransactionsHash d
     , _payloadWithOutputsOutputsHash = _payloadDataOutputsHash d
+    , _payloadWithOutputsChainId = cid
+    , _payloadWithOutputsChainwebVersion = v
     }
 
 newPayloadWithOutputs
-    :: MinerData
+    :: ChainwebVersion
+    -> ChainId
+    -> MinerData
     -> CoinbaseOutput
     -> S.Seq (Transaction, TransactionOutput)
     -> PayloadWithOutputs
-newPayloadWithOutputs mi co s = PayloadWithOutputs
+newPayloadWithOutputs v cid mi co s = PayloadWithOutputs
     { _payloadWithOutputsTransactions = s
     , _payloadWithOutputsMiner = mi
     , _payloadWithOutputsCoinbase = co
     , _payloadWithOutputsPayloadHash = _blockPayloadPayloadHash p
     , _payloadWithOutputsTransactionsHash = _blockPayloadTransactionsHash p
     , _payloadWithOutputsOutputsHash = _blockPayloadOutputsHash p
+    , _payloadWithOutputsChainId = cid
+    , _payloadWithOutputsChainwebVersion = v
     }
   where
     p = newBlockPayload mi co s
@@ -800,6 +839,8 @@ instance ToJSON PayloadWithOutputs where
         , "payloadHash" .= _payloadWithOutputsPayloadHash o
         , "transactionsHash" .= _payloadWithOutputsTransactionsHash o
         , "outputsHash" .= _payloadWithOutputsOutputsHash o
+        , "chainId" .= _payloadWithOutputsChainId o
+        , "chainwebVersion" .= _payloadWithOutputsChainwebVersion o
         ]
 
 instance FromJSON PayloadWithOutputs where
@@ -810,6 +851,8 @@ instance FromJSON PayloadWithOutputs where
         <*> o .: "payloadHash"
         <*> o .: "transactionsHash"
         <*> o .: "outputsHash"
+        <*> o .: "chainId"
+        <*> o .: "chainwebVersion"
 
 payloadWithOutputsToBlockObjects :: PayloadWithOutputs -> (BlockTransactions, BlockOutputs)
 payloadWithOutputsToBlockObjects PayloadWithOutputs {..} =

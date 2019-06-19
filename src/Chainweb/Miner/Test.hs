@@ -110,8 +110,7 @@ testMiner
     -> IO ()
 testMiner logFun conf nid cutDb = runForever logFun "Test Miner" $ do
     gen <- MWC.createSystemRandom
-    ver <- getVer
-    go gen ver 1
+    go gen 1
   where
     wcdb = view cutDbWebBlockHeaderDb cutDb
     payloadDb = view cutDbPayloadCas cutDb
@@ -126,21 +125,16 @@ testMiner logFun conf nid cutDb = runForever logFun "Test Miner" $ do
     graphOrder :: Natural
     graphOrder = order graph
 
-    getVer :: IO ChainwebVersion
-    getVer = do
-        c <- _cut cutDb
-        cid <- randomChainId c
-        pure . _blockChainwebVersion $ c ^?! ixg cid
+    ver = _chainwebVersion cutDb
 
     miners :: Natural
     miners = _minerCount $ _configTestMiners conf
 
     go
         :: MWC.GenIO
-        -> ChainwebVersion
         -> Int
         -> IO ()
-    go gen ver !i = do
+    go gen !i = do
         nonce0 <- MWC.uniform gen
 
         -- Artificially delay the mining process since we are not using
@@ -170,7 +164,7 @@ testMiner logFun conf nid cutDb = runForever logFun "Test Miner" $ do
         --
         addCutHashes cutDb (cutToCutHashes Nothing c')
 
-        go gen ver (i + 1)
+        go gen (i + 1)
       where
         meanBlockTime :: Double
         meanBlockTime = case blockRate ver of
@@ -214,7 +208,7 @@ testMiner logFun conf nid cutDb = runForever logFun "Test Miner" $ do
         payload <- case mockPact of
             False -> _pactNewBlock pact (_configMinerInfo conf) p
             True -> return
-                $ newPayloadWithOutputs (MinerData "miner") (CoinbaseOutput "coinbase")
+                $ newPayloadWithOutputs ver cid (MinerData "miner") (CoinbaseOutput "coinbase")
                 $ Seq.fromList
                     [ (Transaction "testTransaction", TransactionOutput "testOutput")
                     ]

@@ -106,9 +106,9 @@ genesisBlockPayloadHash v = _payloadWithOutputsPayloadHash . genesisBlockPayload
 -- should have the TransactionTree and OutputTree to avoid recreating those
 -- in PayloadStore.
 genesisBlockPayload :: ChainwebVersion -> ChainId -> PayloadWithOutputs
-genesisBlockPayload Test{} _ = emptyPayload
-genesisBlockPayload TimedConsensus{} _ = emptyPayload
-genesisBlockPayload PowConsensus{} _ = emptyPayload
+genesisBlockPayload v@Test{} cid = emptyPayload v cid
+genesisBlockPayload v@TimedConsensus{} cid = emptyPayload v cid
+genesisBlockPayload v@PowConsensus{} cid = emptyPayload v cid
 genesisBlockPayload TimedCPM{} _ = TN0.payloadBlock
 genesisBlockPayload Testnet00 _ = TN0.payloadBlock
 genesisBlockPayload Testnet01 _ = TN1.payloadBlock

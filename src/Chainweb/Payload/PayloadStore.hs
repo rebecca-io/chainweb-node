@@ -77,7 +77,7 @@ import Chainweb.Version
 
 import Data.CAS
 
-newtype PayloadNotFoundException = PayloadNotFoundException BlockPayloadHash
+newtype PayloadNotFoundException = PayloadNotFoundException ChainwebBlockPayloadHash
     deriving (Show, Eq, Ord, Generic)
     deriving anyclass (NFData, Hashable)
 
@@ -247,7 +247,7 @@ instance PayloadCas cas => IsCas (PayloadDb cas) where
     casInsert = addNewPayload
     {-# INLINE casInsert #-}
 
-    casLookup db k = runMaybeT $ do
+    casLookup db (ChainwebBlockPayloadHash k cid v) = runMaybeT $ do
         pd <- MaybeT $ casLookup
             (_transactionDbBlockPayloads $ _transactionDb db)
             k
@@ -266,10 +266,12 @@ instance PayloadCas cas => IsCas (PayloadDb cas) where
             , _payloadWithOutputsPayloadHash = k
             , _payloadWithOutputsTransactionsHash = txsHash
             , _payloadWithOutputsOutputsHash = outsHash
+            , _payloadWithOutputsChainId = cid
+            , _payloadWithOutputsChainwebVersion = v
             }
     {-# INLINE casLookup #-}
 
-    casDelete db k =
+    casDelete db (ChainwebBlockPayloadHash k _cid _v) =
         casLookup (_transactionDbBlockPayloads $ _transactionDb db) k >>= \case
             Just pd -> do
                 casDelete

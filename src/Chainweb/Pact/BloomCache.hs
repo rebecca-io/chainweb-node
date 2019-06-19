@@ -216,8 +216,8 @@ updateChain' cutDb bdb minHeight blockHeader0 mp0 = go mp0 blockHeader0
         hc = _blockHash blockHeader
         hkey = (hgt, hc)
         insBloom = do
-            let payloadHash = _blockPayloadHash blockHeader
-            (PayloadWithOutputs txsBs _ _ _ _ _) <- MaybeT $ casLookup pdb payloadHash
+            let payloadHash = _chainwebBlockPayloadHash blockHeader
+            (PayloadWithOutputs txsBs _ _ _ _ _ _ _) <- MaybeT $ casLookup pdb payloadHash
             hashes <- mapM (fmap (H.toUntypedHash . _cmdHash) . fromTx) txsBs
             let ~bloom = Bloom.easyList bloomFalsePositiveRate $ toList hashes
             return $! HashMap.insert hkey bloom mp

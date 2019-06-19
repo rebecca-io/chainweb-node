@@ -28,6 +28,7 @@ import Chainweb.Pact.Types
 import Chainweb.Payload
 import Chainweb.Transaction
 import Chainweb.Utils (codecDecode)
+import Chainweb.Version
 
 data PactExecutionService = PactExecutionService
   { _pactValidateBlock :: BlockHeader -> PayloadData -> IO PayloadWithOutputs
@@ -83,10 +84,10 @@ mkPactExecutionService mempool q = PactExecutionService
 -- | A mock execution service for testing scenarios. Throws out anything it's
 -- given.
 --
-emptyPactExecutionService :: PactExecutionService
-emptyPactExecutionService = PactExecutionService
-    { _pactValidateBlock = \_ _ -> pure emptyPayload
-    , _pactNewBlock = \_ _ -> pure emptyPayload
+emptyPactExecutionService :: ChainwebVersion -> ChainId -> PactExecutionService
+emptyPactExecutionService v cid = PactExecutionService
+    { _pactValidateBlock = \_ _ -> pure (emptyPayload v cid)
+    , _pactNewBlock = \_ _ -> pure (emptyPayload v cid)
     , _pactLocal = \_ -> throwM (userError $ "emptyPactExecutionService: attempted `local` call")
     }
 

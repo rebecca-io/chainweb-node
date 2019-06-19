@@ -106,9 +106,10 @@ genPayloadModule v txFiles = do
             ProcSucc c -> return $ fmap (\bs -> PayloadWithText bs (_cmdPayload c)) cmdBS
 
     let logger = genericLogger Warn TIO.putStrLn
+    let cid = someChainId Testnet00
 
-    payloadWO <- initPactService' (someChainId Testnet00) logger (const noSPVSupport) $
-        execNewGenesisBlock noMiner (V.fromList cwTxs)
+    payloadWO <- initPactService' cid logger (const noSPVSupport) $
+        execNewGenesisBlock v cid noMiner (V.fromList cwTxs)
 
     let payloadYaml = TE.decodeUtf8 $ Yaml.encode payloadWO
         modl = T.unlines $ startModule v <> [payloadYaml] <> endModule
