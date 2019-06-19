@@ -84,7 +84,7 @@ import Chainweb.ChainId
 import Chainweb.CutDB
 import Chainweb.CutDB.RestAPI.Server
 import Chainweb.HostAddress
-import Chainweb.Mempool.Mempool (MempoolBackend)
+import Chainweb.Mempool.Mempool (Mempool)
 import qualified Chainweb.Mempool.RestAPI.Server as Mempool
 import qualified Chainweb.Pact.RestAPI as PactAPI
 import qualified Chainweb.Pact.RestAPI.Server as PactAPI
@@ -114,7 +114,7 @@ import P2P.Node.RestAPI.Server
 data ChainwebServerDbs t logger cas = ChainwebServerDbs
     { _chainwebServerCutDb :: !(Maybe (CutDb cas))
     , _chainwebServerBlockHeaderDbs :: ![(ChainId, BlockHeaderDb)]
-    , _chainwebServerMempools :: ![(ChainId, MempoolBackend t)]
+    , _chainwebServerMempools :: ![(ChainId, Mempool t)]
     , _chainwebServerPayloadDbs :: ![(ChainId, PayloadDb cas)]
     , _chainwebServerPeerDbs :: ![(NetworkId, PeerDb)]
     , _chainwebServerPactDbs :: ![(ChainId, PactAPI.PactServerData logger cas)]

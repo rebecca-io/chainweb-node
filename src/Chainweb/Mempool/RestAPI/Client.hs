@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,9 +66,9 @@ toMempool
     -> TransactionConfig t
     -> Int64
     -> ClientEnv
-    -> MempoolBackend t
+    -> Mempool t
 toMempool version chain txcfg blocksizeLimit env =
-    MempoolBackend
+    Mempool
     { mempoolTxConfig = txcfg
     , mempoolBlockGasLimit = blocksizeLimit
     , mempoolMember = member

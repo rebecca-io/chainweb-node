@@ -61,7 +61,7 @@ import Chainweb.Chainweb.ChainResources
 import Chainweb.Chainweb.CutResources
 import Chainweb.Cut
 import qualified Chainweb.CutDB as CutDB
-import Chainweb.Mempool.Mempool (MempoolBackend(..))
+import Chainweb.Mempool.Mempool (Mempool(..))
 import Chainweb.Pact.BloomCache (TransactionBloomCache)
 import qualified Chainweb.Pact.BloomCache as Bloom
 import Chainweb.Pact.RestAPI
@@ -133,7 +133,7 @@ somePactServers v =
     mconcat . fmap (somePactServer . uncurry (somePactServerData v))
 
 
-sendHandler :: MempoolBackend ChainwebTransaction -> SubmitBatch -> Handler RequestKeys
+sendHandler :: Mempool ChainwebTransaction -> SubmitBatch -> Handler RequestKeys
 sendHandler mempool (SubmitBatch cmds) =
     Handler $
     case traverse validateCommand cmds of

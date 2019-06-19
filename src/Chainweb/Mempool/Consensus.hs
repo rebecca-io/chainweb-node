@@ -51,12 +51,12 @@ import Chainweb.Transaction
 import Chainweb.TreeDB
 import Chainweb.Utils
 
-import Data.LogMessage (JsonLog(..), LogFunction)
 import Data.CAS
+import Data.LogMessage (JsonLog(..), LogFunction)
 
 ----------------------------------------------------------------------------------------------------
 data MempoolConsensus t = MempoolConsensus
-    { mpcMempool :: !(MempoolBackend t)
+    { mpcMempool :: !(Mempool t)
     , mpcLastNewBlockParent :: !(IORef (Maybe BlockHeader))
     , mpcProcessFork :: LogFunction -> BlockHeader -> IO (Vector ChainwebTransaction)
     }
@@ -79,7 +79,7 @@ instance Exception MempoolException
 mkMempoolConsensus
     :: PayloadCas cas
     => Bool
-    -> MempoolBackend t
+    -> Mempool t
     -> BlockHeaderDb
     -> Maybe (PayloadDb cas)
     -> IO (MempoolConsensus t)

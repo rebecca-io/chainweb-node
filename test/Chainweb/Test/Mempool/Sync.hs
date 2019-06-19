@@ -56,7 +56,7 @@ testInMemCfg = InMemConfig txcfg mockBlockGasLimit (hz 100) 2048 True
 
 propSync
     :: (Set MockTx, Set MockTx , Set MockTx)
-    -> MempoolBackend MockTx
+    -> Mempool MockTx
     -> IO (Either String ())
 propSync (txs, missing, later) localMempool' =
     withInMemoryMempool testInMemCfg $ \remoteMempool -> do
@@ -119,7 +119,7 @@ propSync (txs, missing, later) localMempool' =
 eatExceptions :: IO () -> IO ()
 eatExceptions = handle $ \(e :: SomeException) -> void $ evaluate e
 
-timebomb :: Int -> IO a -> MempoolBackend t -> IO (MempoolBackend t)
+timebomb :: Int -> IO a -> Mempool t -> IO (Mempool t)
 timebomb k act mp = do
     ref <- newIORef k
     return $! mp { mempoolInsert = ins ref }

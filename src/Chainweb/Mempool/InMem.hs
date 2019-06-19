@@ -82,12 +82,12 @@ newInMemMempoolData = InMemoryMempoolData <$!> newIORef PSQ.empty
 
 ------------------------------------------------------------------------------
 makeSelfFinalizingInMemPool :: InMemConfig t
-                            -> IO (MempoolBackend t)
+                            -> IO (Mempool t)
 makeSelfFinalizingInMemPool cfg =
     mask_ $ bracketOnError (makeInMemPool cfg) destroyInMemPool $ \mpool -> do
         ref <- newIORef mpool
         wk <- mkWeakIORef ref (destroyInMemPool mpool)
-        back <- toMempoolBackend mpool
+        back <- toMempool mpool
         let txcfg = mempoolTxConfig back
         let bsl = mempoolBlockGasLimit back
         return $ wrapBackend txcfg bsl (ref, wk)
@@ -96,9 +96,9 @@ makeSelfFinalizingInMemPool cfg =
 wrapBackend :: TransactionConfig t
             -> Int64
             -> (IORef (InMemoryMempool t), b)
-            -> MempoolBackend t
+            -> Mempool t
 wrapBackend txcfg bsl mp =
-      MempoolBackend
+      Mempool
       { mempoolTxConfig = txcfg
       , mempoolBlockGasLimit = bsl
       , mempoolMember = withRef mp . flip mempoolMember
@@ -118,17 +118,17 @@ wrapBackend txcfg bsl mp =
              -> IO HighwaterMark
       getPnd (ref, _wk) a b = do
           mpl <- readIORef ref
-          mb <- toMempoolBackend mpl
+          mb <- toMempool mpl
           x <- mempoolGetPendingTransactions mb a b
           writeIORef ref mpl
           return x
 
       withRef :: (IORef (InMemoryMempool t), a)
-              -> (MempoolBackend t -> IO z)
+              -> (Mempool t -> IO z)
               -> IO z
       withRef (ref, _wk) f = do
             mpl <- readIORef ref
-            mb <- toMempoolBackend mpl
+            mb <- toMempool mpl
             x <- f mb
             writeIORef ref mpl
             return x
@@ -157,11 +157,11 @@ reaperThread cfg dataLock restore = forever $ do
         in foldl' (flip PSQ.delete) pending tooOld
 
 ------------------------------------------------------------------------------
-toMempoolBackend
+toMempool
     :: InMemoryMempool t
-    -> IO (MempoolBackend t)
-toMempoolBackend mempool = do
-    return $! MempoolBackend
+    -> IO (Mempool t)
+toMempool mempool = do
+    return $! Mempool
       { mempoolTxConfig = tcfg
       , mempoolBlockGasLimit = blockSizeLimit
       , mempoolMember = member
@@ -194,11 +194,11 @@ toMempoolBackend mempool = do
 ------------------------------------------------------------------------------
 -- | A 'bracket' function for in-memory mempools.
 withInMemoryMempool :: InMemConfig t
-                    -> (MempoolBackend t -> IO a)
+                    -> (Mempool t -> IO a)
                     -> IO a
 withInMemoryMempool cfg f = do
     let action inMem = do
-          back <- toMempoolBackend inMem
+          back <- toMempool inMem
           f $! back
     bracket (makeInMemPool cfg) destroyInMemPool action
 

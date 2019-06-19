@@ -64,7 +64,7 @@ import Chainweb.Logger
 import qualified Chainweb.Mempool.Consensus as MPCon
 import qualified Chainweb.Mempool.InMem as Mempool
 import qualified Chainweb.Mempool.InMemTypes as Mempool
-import Chainweb.Mempool.Mempool (MempoolBackend)
+import Chainweb.Mempool.Mempool (Mempool)
 import qualified Chainweb.Mempool.Mempool as Mempool
 import Chainweb.Mempool.P2pConfig
 import qualified Chainweb.Mempool.RestAPI.Client as MPC
@@ -94,7 +94,7 @@ data ChainResources logger = ChainResources
     { _chainResPeer :: !(PeerResources logger)
     , _chainResBlockHeaderDb :: !BlockHeaderDb
     , _chainResLogger :: !logger
-    , _chainResMempool :: !(MempoolBackend ChainwebTransaction)
+    , _chainResMempool :: !(Mempool ChainwebTransaction)
     , _chainResPact :: PactExecutionService
     }
 

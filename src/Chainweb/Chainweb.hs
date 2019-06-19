@@ -83,8 +83,6 @@ module Chainweb.Chainweb
 
 ) where
 
-import Chainweb.Payload.PayloadStore.RocksDB
-
 import Configuration.Utils hiding (Lens', (<.>))
 
 import Control.Concurrent.Async
@@ -131,6 +129,7 @@ import Chainweb.NodeId
 import qualified Chainweb.Pact.BloomCache as Bloom
 import Chainweb.Pact.RestAPI.Server (PactServerData)
 import Chainweb.Payload.PayloadStore
+import Chainweb.Payload.PayloadStore.RocksDB
 import Chainweb.RestAPI
 import Chainweb.RestAPI.NetworkID
 import Chainweb.Transaction

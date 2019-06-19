@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Chainweb.Mempool.Mempool
-  ( MempoolBackend(..)
+  ( Mempool(..)
   , TransactionConfig(..)
   , TransactionHash(..)
   , TransactionMetadata(..)
@@ -121,7 +121,7 @@ type HighwaterMark = (ServerNonce, MempoolTxId)
 
 ------------------------------------------------------------------------------
 -- | Mempool backend API. Here @t@ is the transaction payload type.
-data MempoolBackend t = MempoolBackend {
+data Mempool t = Mempool {
     mempoolTxConfig :: {-# UNPACK #-} !(TransactionConfig t)
 
     -- TODO: move this inside TransactionConfig or new MempoolConfig ?
@@ -165,9 +165,9 @@ data MempoolBackend t = MempoolBackend {
 }
 
 
-noopMempool :: IO (MempoolBackend t)
+noopMempool :: IO (Mempool t)
 noopMempool = do
-  return $ MempoolBackend
+  return $ Mempool
     { mempoolTxConfig = txcfg
     , mempoolBlockGasLimit = 1000
     , mempoolMember = noopMember
@@ -247,9 +247,9 @@ syncMempools'
     => LogFunctionText
     -> Int
         -- ^ polling interval in microseconds
-    -> MempoolBackend t
+    -> Mempool t
         -- ^ local mempool
-    -> MempoolBackend t
+    -> Mempool t
         -- ^ remote mempool
     -> IO ()
 syncMempools' log0 us localMempool remoteMempool = sync
@@ -385,8 +385,8 @@ syncMempools
     :: Show t
     => LogFunctionText
     -> Int                  -- ^ polling interval in microseconds
-    -> MempoolBackend t     -- ^ local mempool
-    -> MempoolBackend t     -- ^ remote mempool
+    -> Mempool t     -- ^ local mempool
+    -> Mempool t     -- ^ remote mempool
     -> IO ()
 syncMempools log us localMempool remoteMempool =
     syncMempools' log us localMempool remoteMempool

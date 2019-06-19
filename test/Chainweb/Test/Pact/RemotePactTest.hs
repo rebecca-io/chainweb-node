@@ -132,7 +132,7 @@ mempoolValidation networkIO rksIO = testCase "mempoolValidationCheck" $ do
     cwEnv <- _getClientEnv <$> networkIO
     noopPool <- noopMempool
     let tConfig = mempoolTxConfig noopPool
-    let mPool = toMempool version cid tConfig 10000 cwEnv :: MempoolBackend ChainwebTransaction
+    let mPool = toMempool version cid tConfig 10000 cwEnv :: Mempool ChainwebTransaction
     testMPValidated mPool rks
 
 -- -------------------------------------------------------------------------- --
@@ -164,7 +164,7 @@ testPoll cmds env rks = do
         Right rsp -> return rsp
 
 testMPValidated
-    :: MempoolBackend ChainwebTransaction
+    :: Mempool ChainwebTransaction
     -> RequestKeys
     -> Assertion
 testMPValidated mPool rks = do
@@ -172,7 +172,7 @@ testMPValidated mPool rks = do
     b <- go maxMempoolRetries mPool txHashes
     assertBool "At least one transaction was not validated" b
   where
-    go :: Int -> MempoolBackend ChainwebTransaction -> Vector TransactionHash ->  IO Bool
+    go :: Int -> Mempool ChainwebTransaction -> Vector TransactionHash ->  IO Bool
     go 0 _ _ = return False
     go retries mp hashes = do
         results <- mempoolLookup mp hashes

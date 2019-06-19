@@ -109,10 +109,10 @@ instance Arbitrary MockTx where
     where
       emptyMeta = TransactionMetadata Time.minTime Time.maxTime
 
-data MempoolWithFunc = MempoolWithFunc (forall a . (MempoolBackend MockTx -> IO a) -> IO a)
+data MempoolWithFunc = MempoolWithFunc (forall a . (Mempool MockTx -> IO a) -> IO a)
 
 mempoolTestCase :: TestName
-                -> (MempoolBackend MockTx -> IO ())
+                -> (Mempool MockTx -> IO ())
                 -> MempoolWithFunc
                 -> TestTree
 mempoolTestCase name test (MempoolWithFunc withMempool) =
@@ -123,7 +123,7 @@ mempoolTestCase name test (MempoolWithFunc withMempool) =
 
 mempoolProperty :: TestName
                 -> PropertyM IO a
-                -> (a -> MempoolBackend MockTx -> IO (Either String ()))
+                -> (a -> Mempool MockTx -> IO (Either String ()))
                 -> MempoolWithFunc
                 -> TestTree
 mempoolProperty name gen test (MempoolWithFunc withMempool) = testProperty name go
@@ -133,10 +133,10 @@ mempoolProperty name gen test (MempoolWithFunc withMempool) = testProperty name 
 
     tout m = timeout 60000000 m >>= maybe (fail "timeout") return
 
-testStartup :: MempoolBackend MockTx -> IO ()
+testStartup :: Mempool MockTx -> IO ()
 testStartup = const $ return ()
 
-testTooOld :: MempoolBackend MockTx -> IO ()
+testTooOld :: Mempool MockTx -> IO ()
 testTooOld mempool = do
     -- TODO: improve this test. Testing via threadDelay is flaky.
     --
@@ -168,7 +168,7 @@ testTooOld mempool = do
     setTooOld now x = x { mockMeta = (mockMeta x) { txMetaExpiryTime = extendTime now } }
     onFees x = (Down (mockGasPrice x), mockGasLimit x, mockNonce x)
 
-propOverlarge :: ([MockTx], [MockTx]) -> MempoolBackend MockTx -> IO (Either String ())
+propOverlarge :: ([MockTx], [MockTx]) -> Mempool MockTx -> IO (Either String ())
 propOverlarge (txs, overlarge0) mempool = runExceptT $ do
     liftIO $ insert $ txs ++ overlarge
     liftIO (lookup txs) >>= V.mapM_ lookupIsPending
@@ -182,7 +182,7 @@ propOverlarge (txs, overlarge0) mempool = runExceptT $ do
     setOverlarge = map (\x -> x { mockGasLimit = mockBlockGasLimit + 100 })
 
 
-propTrivial :: [MockTx] -> MempoolBackend MockTx -> IO (Either String ())
+propTrivial :: [MockTx] -> Mempool MockTx -> IO (Either String ())
 propTrivial txs mempool = runExceptT $ do
     liftIO $ insert txs
     liftIO (lookup txs) >>= V.mapM_ lookupIsPending
@@ -203,7 +203,7 @@ propTrivial txs mempool = runExceptT $ do
     onFees x = (Down (mockGasPrice x), mockGasLimit x)
 
 
-propGetPending :: [MockTx] -> MempoolBackend MockTx -> IO (Either String ())
+propGetPending :: [MockTx] -> Mempool MockTx -> IO (Either String ())
 propGetPending txs0 mempool = runExceptT $ do
     liftIO $ insert txs
     pendingOps <- liftIO $ newIORef []
@@ -226,7 +226,7 @@ propGetPending txs0 mempool = runExceptT $ do
     getPending = mempoolGetPendingTransactions mempool
     insert = mempoolInsert mempool . V.fromList
 
-propHighWater :: ([MockTx], [MockTx]) -> MempoolBackend MockTx -> IO (Either String ())
+propHighWater :: ([MockTx], [MockTx]) -> Mempool MockTx -> IO (Either String ())
 propHighWater (txs0, txs1) mempool = runExceptT $ do
     liftIO $ insert txs0
     hw <- liftIO $ getPending Nothing $ const (return ())
@@ -259,7 +259,7 @@ uniq l@[_] = l
 uniq (x:ys@(y:rest)) | x == y    = uniq (x:rest)
                      | otherwise = x : uniq ys
 
-propValidate :: ([MockTx], [MockTx]) -> MempoolBackend MockTx -> IO (Either String ())
+propValidate :: ([MockTx], [MockTx]) -> Mempool MockTx -> IO (Either String ())
 propValidate (txs0, txs1) mempool = runExceptT $ do
     insert txs0
     insert txs1

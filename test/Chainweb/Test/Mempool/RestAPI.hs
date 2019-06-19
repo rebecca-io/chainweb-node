@@ -47,8 +47,8 @@ tests = withResource (newPool cfg) Pool.destroyAllResources $
     hasher = chainwebTestHasher . codecEncode mockCodec
 
 data TestServer = TestServer {
-    _tsRemoteMempool :: !(MempoolBackend MockTx)
-  , _tsLocalMempool :: !(MempoolBackend MockTx)
+    _tsRemoteMempool :: !(Mempool MockTx)
+  , _tsLocalMempool :: !(Mempool MockTx)
   , _tsServerThread :: !ThreadId
   }
 
@@ -92,13 +92,13 @@ newPool cfg = Pool.createPool (newTestServer cfg) destroyTestServer 1 10 20
 ------------------------------------------------------------------------------
 
 serverMempools
-    :: [(ChainId, MempoolBackend t)] -> ChainwebServerDbs t () RocksDbCas {- ununsed -}
+    :: [(ChainId, Mempool t)] -> ChainwebServerDbs t () RocksDbCas {- ununsed -}
 serverMempools mempools = emptyChainwebServerDbs
     { _chainwebServerMempools = mempools
     }
 
 withRemoteMempool
-  :: IO (Pool.Pool TestServer) -> (MempoolBackend MockTx -> IO a) -> IO a
+  :: IO (Pool.Pool TestServer) -> (Mempool MockTx -> IO a) -> IO a
 withRemoteMempool poolIO userFunc = do
     pool <- poolIO
     Pool.withResource pool $ \ts -> do

@@ -37,28 +37,28 @@ import Chainweb.Utils
 import Chainweb.Version
 
 ------------------------------------------------------------------------------
-insertHandler :: Show t => MempoolBackend t -> [t] -> Handler NoContent
+insertHandler :: Show t => Mempool t -> [t] -> Handler NoContent
 insertHandler mempool txs = handleErrs (NoContent <$ liftIO ins)
   where
     txV = V.fromList txs
     ins = mempoolInsert mempool txV
 
 
-memberHandler :: Show t => MempoolBackend t -> [TransactionHash] -> Handler [Bool]
+memberHandler :: Show t => Mempool t -> [TransactionHash] -> Handler [Bool]
 memberHandler mempool txs = handleErrs (liftIO mem)
   where
     txV = V.fromList txs
     mem = V.toList <$> mempoolMember mempool txV
 
 
-lookupHandler :: Show t => MempoolBackend t -> [TransactionHash] -> Handler [LookupResult t]
+lookupHandler :: Show t => Mempool t -> [TransactionHash] -> Handler [LookupResult t]
 lookupHandler mempool txs = handleErrs (liftIO look)
   where
     txV = V.fromList txs
     look = V.toList <$> mempoolLookup mempool txV
 
 
-getBlockHandler :: Show t => MempoolBackend t -> Maybe Int64 -> Handler [t]
+getBlockHandler :: Show t => Mempool t -> Maybe Int64 -> Handler [t]
 getBlockHandler mempool mbSz = handleErrs (liftIO gb)
   where
     sz = fromMaybe (mempoolBlockGasLimit mempool) mbSz
@@ -73,7 +73,7 @@ data GpData t = GpData {
 
 getPendingHandler
     :: Show t
-    => MempoolBackend t
+    => Mempool t
     -> Maybe ServerNonce
     -> Maybe MempoolTxId
     -> Handler (Streams.InputStream (Either HighwaterMark [TransactionHash]))
@@ -125,7 +125,7 @@ someMempoolServer (SomeMempool (mempool :: Mempool_ v c t))
 
 someMempoolServers
     :: (Show t, ToJSON t, FromJSON t)
-    => ChainwebVersion -> [(ChainId, MempoolBackend t)] -> SomeServer
+    => ChainwebVersion -> [(ChainId, Mempool t)] -> SomeServer
 someMempoolServers v = mconcat
     . fmap (someMempoolServer . uncurry (someMempoolVal v))
 

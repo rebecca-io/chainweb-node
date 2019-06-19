@@ -40,7 +40,7 @@ import Chainweb.BlockHeader.Genesis (genesisBlockHeader)
 import Chainweb.BlockHeaderDB
 import Chainweb.ChainId
 import Chainweb.Graph
-import Chainweb.Mempool.Mempool (MempoolBackend, MockTx)
+import Chainweb.Mempool.Mempool (Mempool, MockTx)
 import Chainweb.RestAPI
 #if ! MIN_VERSION_servant(0,16,0)
 import Chainweb.RestAPI.Utils
@@ -110,7 +110,7 @@ tests_ rdb tls =
 --
 type TestClientEnv_ = TestClientEnv MockTx RocksDbCas
 
-noMempool :: [(ChainId, MempoolBackend MockTx)]
+noMempool :: [(ChainId, Mempool MockTx)]
 noMempool = []
 
 simpleSessionTests :: RocksDb -> Bool -> ChainwebVersion -> TestTree

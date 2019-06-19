@@ -146,7 +146,7 @@ import Chainweb.Crypto.MerkleLog hiding (header)
 import Chainweb.CutDB
 import Chainweb.Difficulty (targetToDifficulty)
 import Chainweb.Graph
-import Chainweb.Mempool.Mempool (MempoolBackend(..))
+import Chainweb.Mempool.Mempool (Mempool(..))
 import Chainweb.Payload.PayloadStore
 import Chainweb.RestAPI
 import Chainweb.RestAPI.NetworkID
@@ -422,7 +422,7 @@ data TestClientEnv t cas = TestClientEnv
     { _envClientEnv :: !ClientEnv
     , _envCutDb :: !(Maybe (CutDb cas))
     , _envBlockHeaderDbs :: ![(ChainId, BlockHeaderDb)]
-    , _envMempools :: ![(ChainId, MempoolBackend t)]
+    , _envMempools :: ![(ChainId, Mempool t)]
     , _envPayloadDbs :: ![(ChainId, PayloadDb cas)]
     , _envPeerDbs :: ![(NetworkId, P2P.PeerDb)]
     , _envVersion :: !ChainwebVersion
@@ -598,7 +598,7 @@ withBlockHeaderDbsServer
     => Bool
     -> ChainwebVersion
     -> IO [(ChainId, BlockHeaderDb)]
-    -> IO [(ChainId, MempoolBackend t)]
+    -> IO [(ChainId, Mempool t)]
     -> (IO (TestClientEnv t cas) -> TestTree)
     -> TestTree
 withBlockHeaderDbsServer tls v chainDbsIO mempoolsIO

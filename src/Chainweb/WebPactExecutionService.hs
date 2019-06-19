@@ -58,7 +58,7 @@ mkWebPactExecutionService hm = WebPactExecutionService $ PactExecutionService
           Nothing -> throwM (userError $ "PactExecutionService: Invalid chain ID in header: " ++ show h)
 
 mkPactExecutionService
-    :: MempoolBackend ChainwebTransaction
+    :: Mempool ChainwebTransaction
     -> TQueue RequestMsg
     -> PactExecutionService
 mkPactExecutionService mempool q = PactExecutionService
@@ -91,7 +91,7 @@ emptyPactExecutionService = PactExecutionService
     }
 
 markAllValidated
-    :: MempoolBackend ChainwebTransaction
+    :: Mempool ChainwebTransaction
     -> PayloadWithOutputs
     -> BlockHeight
     -> BlockHash
