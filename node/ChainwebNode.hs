@@ -22,7 +22,7 @@
 --
 -- TODO
 --
-module Main
+module ChainwebNode
 (
 -- * Configuration
   ChainwebNodeConfiguration(..)
@@ -70,11 +70,11 @@ import System.LogLevel
 import Chainweb.BlockHeader (NewMinedBlock)
 import Chainweb.Chainweb
 import Chainweb.Chainweb.CutResources
-import Chainweb.Mempool.Consensus (ReintroducedTxsLog)
 import Chainweb.Counter
 import Chainweb.Cut.CutHashes
 import Chainweb.CutDB
 import Chainweb.Logger
+import Chainweb.Mempool.Consensus (ReintroducedTxsLog)
 import Chainweb.Sync.WebBlockHeaderStore
 import Chainweb.Utils
 import Chainweb.Utils.RequestLog

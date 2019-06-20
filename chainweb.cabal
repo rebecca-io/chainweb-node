@@ -464,7 +464,7 @@ test-suite chainweb-tests
 -- Chainweb Node Application
 -- -------------------------------------------------------------------------- --
 
--- The application that runs an chainweb node
+-- The application that runs a full chainweb node
 --
 executable chainweb-node
     import: warning-flags, debugging-flags
@@ -476,6 +476,47 @@ executable chainweb-node
     hs-source-dirs: node
     main-is: ChainwebNode.hs
     other-modules:
+        Paths_chainweb
+        PkgInfo
+    autogen-modules:
+        Paths_chainweb
+        PkgInfo
+    build-depends:
+        -- internal
+          chainweb
+
+        -- external
+        , aeson >= 1.4.3
+        , async >= 2.2
+        , base >= 4.11 && < 5
+        , bytestring >= 0.10
+        , case-insensitive >= 1.2
+        , configuration-tools >= 0.4.1
+        , deepseq >= 1.4
+        , directory >= 1.3
+        , exceptions >= 0.8
+        , http-client >= 0.5
+        , lens >= 4.16
+        , loglevel >= 0.1
+        , managed >= 1.0
+        , monad-control >= 1.0
+        , mtl >= 2.2
+        , stm
+        , streaming >= 0.2
+        , text >= 1.2
+        , yet-another-logger >= 0.3.1
+
+executable chainweb-mempool
+    import: warning-flags, debugging-flags
+    default-language: Haskell2010
+    ghc-options:
+        -threaded
+        -with-rtsopts=-N
+        -rtsopts
+    hs-source-dirs: node
+    main-is: MempoolNode.hs
+    other-modules:
+        ChainwebNode
         Paths_chainweb
         PkgInfo
     autogen-modules:
