@@ -42,12 +42,6 @@ source-repository head
     type: git
     location: https://github.com/kadena-io/chainweb.git
 
-flag tls13
-    description:
-        Enable TLSv1.3; depends on the master branch of the tls package.
-    default: False
-    manual: True
-
 flag ed25519
     description:
         Use ED25519 certificates; depends on the master branch of the tls
@@ -215,22 +209,18 @@ library
         , P2P.TaskQueue.Test
 
         -- pact
-        , Chainweb.Pact.Backend.ChainwebPactDb
         , Chainweb.Pact.Backend.InMemoryCheckpointer
-        , Chainweb.Pact.Backend.RelationalCheckpointer
-        , Chainweb.Pact.Backend.SQLite.DirectV2
-        , Chainweb.Pact.Backend.SQLite.V2
+        , Chainweb.Pact.Backend.MemoryDb
         , Chainweb.Pact.Backend.Types
-        , Chainweb.Pact.Backend.Utils
         , Chainweb.Pact.BloomCache
         , Chainweb.Pact.PactService
         , Chainweb.Pact.RestAPI
         , Chainweb.Pact.RestAPI.Server
-        , Chainweb.Pact.SPV
         , Chainweb.Pact.Service.BlockValidation
         , Chainweb.Pact.Service.PactInProcApi
         , Chainweb.Pact.Service.PactQueue
         , Chainweb.Pact.Service.Types
+        , Chainweb.Pact.SPV
         , Chainweb.Pact.TransactionExec
         , Chainweb.Pact.Types
         , Chainweb.Pact.Utils
@@ -266,8 +256,8 @@ library
         , data-dword >= 0.3
         , deepseq >= 1.4
         , digraph >= 0.1.0.2
-        , direct-sqlite >= 2.3
         , directory >= 1.3
+        , dlist >= 0.8
         , errors >= 2.3
         , exceptions >= 0.8
         , extra >= 1.6
@@ -278,7 +268,6 @@ library
         , http-client >= 0.5
         , http-client-tls >=0.3
         , http-types >= 0.12
-        , io-streams >= 1.5
         , ixset-typed >= 0.4
         , lens >= 4.16
         , loglevel >= 0.1
@@ -321,7 +310,7 @@ library
         , text >= 1.2
         , thyme == 0.3.6.0
         , time >= 1.8
-        , tls >=1.4
+        , tls >=1.5
         , transformers >= 0.5
         , trifecta >= 2
         , unordered-containers >= 0.2
@@ -341,9 +330,6 @@ library
         , x509-validation >=1.6
         , yaml >= 0.11
         , yet-another-logger >= 0.3.1
-
-    if flag(tls13)
-        cpp-options: -DWITH_TLS13=1
 
     if flag(ed25519)
         cpp-options: -DWITH_ED25519=1
@@ -409,7 +395,6 @@ test-suite chainweb-tests
         , data-ordlist >= 0.4.7
         , deepseq >= 1.4
         , directory >= 1.2
-        , direct-sqlite >= 2.3
         , exceptions
         , extra >= 1.6
         , extra >= 1.6
@@ -431,7 +416,6 @@ test-suite chainweb-tests
         , reflection >= 2.1
         , resource-pool >= 0.2
         , resourcet >= 1.2
-        , safe-exceptions >= 0.1
         , servant >= 0.14
         , servant-client >= 0.14
         , servant-client-core >= 0.14
@@ -609,7 +593,6 @@ executable cwtool
         , http-client >= 0.5
         , http-client-tls >=0.3
         , http-types >= 0.12
-        , io-streams >= 1.5
         , lens >= 4.16
         , loglevel >= 0.1
         , managed >= 1.0
@@ -649,7 +632,7 @@ executable cwtool
         , text >= 1.2
         , these >= 0.7
         , time >= 1.8
-        , tls >=1.4
+        , tls >=1.5
         , transformers >= 0.5
         , unordered-containers >= 0.2
         , vector >= 0.12
