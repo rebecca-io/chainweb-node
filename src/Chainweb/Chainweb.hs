@@ -55,6 +55,7 @@ module Chainweb.Chainweb
 , configTransactionIndex
 , defaultChainwebConfiguration
 , pChainwebConfiguration
+, mempoolConfig
 
 -- * Chainweb Resources
 , Chainweb(..)

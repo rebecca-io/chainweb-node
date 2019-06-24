@@ -49,6 +49,9 @@ module Chainweb.RestAPI
 
 -- ** P2P API Client
 , module P2P.Node.RestAPI.Client
+
+-- ** CORS
+, chainwebCors
 ) where
 
 import Control.Lens
