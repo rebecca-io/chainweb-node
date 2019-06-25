@@ -19,7 +19,11 @@ import Configuration.Utils hiding (Lens', (<.>))
 import Control.Lens hiding ((.=), (<.>))
 import Data.Foldable
 import GHC.Generics
+import Network.Socket
+import Network.Wai
+import Network.Wai.Handler.Warp
 import Network.Wai.Handler.WarpTLS as WARP (runTLSSocket)
+import PkgInfo
 import qualified System.Logger as L
 import Utils.Logging.Config
 
@@ -31,7 +35,7 @@ import Chainweb.Mempool.Mempool (Mempool)
 import Chainweb.Mempool.P2pConfig
 import Chainweb.Mempool.RestAPI
 import Chainweb.Mempool.RestAPI.Server
-import Chainweb.Node (runRtsMonitor)
+import Chainweb.Node (runRtsMonitor, withNodeLogger)
 import Chainweb.RestAPI
 import Chainweb.RestAPI.Utils
 import Chainweb.Version
@@ -73,6 +77,14 @@ pMempoolNodeConfiguration = id
     <$< mpChainwebConfig %:: pChainwebConfiguration
     <*< mpConfigLog %:: pLogConfig
 
+serveMempoolSocketTls
+    :: Settings
+    -> X509CertChainPem
+    -> X509KeyPem
+    -> Socket
+    -> (t -> Application)
+    -> t
+    -> IO ()
 serveMempoolSocketTls settings certChain key sock m app
     = runTLSSocket tlsSettings settings sock $ m app
   where
@@ -106,5 +118,16 @@ runMempoolNode mpConf logger = withMempools $ \mempools -> do
 node :: Logger logger => MempoolNodeConfiguration -> logger -> IO ()
 node conf logger = undefined
 
+-- -------------------------------------------------------------------------- --
+-- main
+
+mainInfo :: ProgramInfo MempoolNodeConfiguration
+mainInfo = programInfo
+    "Chainweb Mempool Node"
+    pMempoolNodeConfiguration
+    (defaultMempoolNodeConfiguration Testnet01)
+
 main :: IO ()
-main = undefined
+main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \conf -> do
+    let v = _configChainwebVersion $ _mpChainwebConfig conf
+    withNodeLogger (_mpConfigLog conf) v $ node conf
