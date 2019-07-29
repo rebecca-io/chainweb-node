@@ -74,7 +74,7 @@ import Chainweb.ChainId
 import Chainweb.Graph
 import Chainweb.HostAddress
 import Chainweb.Pact.RestAPI
-#if !MIN_VERSION_servant(0,15,0)
+#if !MIN_VERSION_servant(0,14,0)
 import Chainweb.RestAPI.Utils
 #endif
 import Chainweb.Utils
@@ -191,7 +191,7 @@ sendTransactions
   :: TXGConfig
   -> ChainId
   -> NonEmpty (Command Text)
-  -> IO (Either ClientError RequestKeys)
+  -> IO (Either ServantError RequestKeys)
 sendTransactions (TXGConfig _ _ cenv v _) cid cmds =
   runClientM (send v cid $ SubmitBatch cmds) cenv
 
@@ -348,7 +348,7 @@ singleTransaction args host (SingleTX c cid)
     datum :: NonEmpty SomeKeyPair -> Value
     datum kps = object ["test-admin-keyset" .= fmap formatB16PubKey kps]
 
-    f :: TXGConfig -> Command Text -> ExceptT ClientError IO ListenResponse
+    f :: TXGConfig -> Command Text -> ExceptT ServantError IO ListenResponse
     f cfg@(TXGConfig _ _ ce v _) cmd = do
       RequestKeys (rk :| _) <- ExceptT . sendTransactions cfg cid $ pure cmd
       ExceptT $ runClientM (listen v cid $ ListenerRequest rk) ce
