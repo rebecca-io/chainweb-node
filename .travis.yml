@@ -101,6 +101,7 @@ matrix:
 
   # Linux build
   - env: BUILD=stack ARGS="-j1" Z3VERSION="4.8.5"
+    dist: xenial
     addons:
       apt: {packages: [libgmp-dev]}
       artifacts:
@@ -156,8 +157,6 @@ before_install:
   else
     travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-    sudo apt-cache search rocksdb
-    sudo apt-get update
     sudo apt-get install -y librocksdb-dev
 
   fi
