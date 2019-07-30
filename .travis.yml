@@ -178,7 +178,7 @@ install:
   set -ex
   case "$BUILD" in
     stack)
-      stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
+      stack --no-terminal --verbosity warn --install-ghc $ARGS --only-dependencies
       ;;
     cabal)
       cabal --version
@@ -197,8 +197,7 @@ script:
   set -ex
   case "$BUILD" in
     stack)
-      stack build --no-terminal --test --ghc-options="-Werror" $ARGS
-      stack exec -- bench +RTS -K1k
+      stack build --no-terminal --ghc-options="-Werror" $ARGS
       ;;
     cabal)
       cabal install --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS $PACKAGES
