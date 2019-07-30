@@ -156,7 +156,7 @@ before_install:
   else
     travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-    sudo apt-get install -y rocksdb
+    sudo apt-get install -y librocksdb-dev
 
   fi
 
