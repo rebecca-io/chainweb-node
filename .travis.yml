@@ -178,7 +178,7 @@ install:
   set -ex
   case "$BUILD" in
     stack)
-      stack --no-terminal --verbosity warn --install-ghc $ARGS --only-dependencies
+      stack --no-terminal --verbosity warn --install-ghc $ARGS build --only-dependencies
       ;;
     cabal)
       cabal --version
