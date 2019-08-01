@@ -191,7 +191,7 @@ sendTransactions
   :: TXGConfig
   -> ChainId
   -> NonEmpty (Command Text)
-  -> IO (Either ServantError RequestKeys)
+  -> IO (Either ClientError RequestKeys)
 sendTransactions (TXGConfig _ _ cenv v _) cid cmds =
   runClientM (send v cid $ SubmitBatch cmds) cenv
 
@@ -348,7 +348,7 @@ singleTransaction args host (SingleTX c cid)
     datum :: NonEmpty SomeKeyPair -> Value
     datum kps = object ["test-admin-keyset" .= fmap formatB16PubKey kps]
 
-    f :: TXGConfig -> Command Text -> ExceptT ServantError IO ListenResponse
+    f :: TXGConfig -> Command Text -> ExceptT ClientError IO ListenResponse
     f cfg@(TXGConfig _ _ ce v _) cmd = do
       RequestKeys (rk :| _) <- ExceptT . sendTransactions cfg cid $ pure cmd
       ExceptT $ runClientM (listen v cid $ ListenerRequest rk) ce

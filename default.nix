@@ -2,6 +2,7 @@
 , rpSha ? "0sxygr1zdsraybnr4m71m36mb95qsy5vczxxm330h0qg2ijsz1nm"
 , system ? builtins.currentSystem
 , runTests ? true
+, profileChainweb ? false
 }:
 
 let
@@ -23,7 +24,11 @@ overlay = self: super: {
     };
   });
 };
-rp = import rpSrc { inherit system; nixpkgsOverlays = [ overlay ]; };
+rp = import rpSrc {
+  inherit system;
+  nixpkgsOverlays = [ overlay ];
+  enableLibraryProfiling = true;
+};
 
 proj = rp.project ({ pkgs, ... }:
   let gitignore = pkgs.callPackage (pkgs.fetchFromGitHub {
@@ -35,7 +40,7 @@ proj = rp.project ({ pkgs, ... }:
   in
   {
     name = "chainweb";
-    overrides = import ./overrides.nix pkgs runTests;
+    overrides = import ./overrides.nix pkgs runTests profileChainweb;
     packages = {
       chainweb = gitignore.gitignoreSource
         [".git" ".gitlab-ci.yml" "CHANGELOG.md" "README.md" "future-work.md"] ./.;
@@ -52,4 +57,4 @@ proj = rp.project ({ pkgs, ... }:
 
   });
 
-in proj.ghc.chainweb
+in proj

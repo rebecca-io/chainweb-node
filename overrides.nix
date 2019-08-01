@@ -1,4 +1,4 @@
-pkgs: runTests: self: super: with pkgs.haskell.lib;
+pkgs: runTests: profileChainweb: self: super: with pkgs.haskell.lib;
 let # Working on getting this function upstreamed into nixpkgs, but
     # this actually gets things directly from hackage and doesn't
     # depend on the state of nixpkgs.  Should allow us to have fewer
@@ -16,6 +16,10 @@ let # Working on getting this function upstreamed into nixpkgs, but
       rev = "dedc8c08ff3e9fe99c4618279435a83dc02f3504";
       sha256 = "0rjh9h4zmlwasc77pwxxg79bgxya5pls6syrmjgn4b65qhb47wld";
       };
+    mayProfile = drv:
+        if profileChainweb
+        then enableExecutableProfiling (enableLibraryProfiling drv)
+        else justStaticExecutables( enableDWARFDebugging drv);
 in
 
 (import "${pactSrc}/overrides.nix" pkgs self super) // {
@@ -25,11 +29,11 @@ in
     sha256 = "13lim8vv78m9lhn7qfjswg7ax825gn0v75gcb80hckxawgk8zxc1";
   };
 
-  chainweb = justStaticExecutables (enableDWARFDebugging (overrideCabal super.chainweb (drv: {
+  chainweb = mayProfile (overrideCabal super.chainweb (drv: {
     doCheck = runTests;
     doHaddock = runTests;
     testTarget = "--test-option=--hide-successes";
-  })));
+    }));
 
   chainweb-storage = pkgs.haskell.lib.dontCheck (self.callCabal2nix "chainweb-storage" (pkgs.fetchFromGitHub {
     owner = "kadena-io";

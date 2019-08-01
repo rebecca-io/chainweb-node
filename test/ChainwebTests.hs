@@ -71,10 +71,10 @@ pactTestSuite rdb = testGroupSch "Chainweb-Pact Tests"
     $ schedule Sequential
         -- It looks like one of these two are extremely slow / non-terminating
         [ Chainweb.Test.Pact.PactExec.tests
-        --, Chainweb.Test.Pact.Checkpointer.tests
-        --, Chainweb.Test.Pact.PactInProcApi.tests
-        --, Chainweb.Test.Pact.RemotePactTest.tests rdb
-        --, Chainweb.Test.Pact.PactReplay.tests
+        , Chainweb.Test.Pact.Checkpointer.tests
+        , Chainweb.Test.Pact.PactInProcApi.tests
+        , Chainweb.Test.Pact.RemotePactTest.tests rdb
+        , Chainweb.Test.Pact.PactReplay.tests
         ]
 
 suite :: RocksDb -> [ScheduledTest]
