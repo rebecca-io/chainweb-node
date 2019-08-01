@@ -1,7 +1,7 @@
 { rpRef ? "21242967fbfae75c1cc4907449b0730dc0a0d906"
 , rpSha ? "0sxygr1zdsraybnr4m71m36mb95qsy5vczxxm330h0qg2ijsz1nm"
 , system ? builtins.currentSystem
-, runTests ? true
+, runTests ? false
 , profileChainweb ? false
 }:
 
@@ -57,4 +57,4 @@ proj = rp.project ({ pkgs, ... }:
 
   });
 
-in proj
+in proj.ghc.chainweb
