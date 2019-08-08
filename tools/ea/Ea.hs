@@ -78,7 +78,7 @@ main :: IO ()
 main = do
     Env txs0 <- execParser opts
     for_ [Development, Testnet00, Testnet01, Testnet02] $ \v -> do
-        let txs = bool txs0 [defCoinContractSig, defCoinContract, defGrants] $ null txs0
+        let txs = bool txs0 [defCoinContractSig, defCoinContract, defGrants v] $ null txs0
         putStrLn $ "Generating Genesis Payload for " <> show v <> "..."
         genPayloadModule v txs
     putStrLn "Done."
@@ -92,8 +92,12 @@ defCoinContractSig = "pact/coin-contract/load-coin-contract-sig.yaml"
 defCoinContract :: FilePath
 defCoinContract = "pact/coin-contract/load-coin-contract.yaml"
 
-defGrants :: FilePath
-defGrants = "pact/genesis/testnet00/grants.yaml"
+genesisDir :: ChainwebVersion -> FilePath
+genesisDir Testnet02 = "pact/genesis/testnet02"
+genesisDir _ = "pact/genesis/testnet00"
+
+defGrants :: ChainwebVersion -> FilePath
+defGrants v = genesisDir v <> "/grants.yaml"
 
 moduleName :: ChainwebVersion -> Text
 moduleName = T.toTitle . chainwebVersionToText
