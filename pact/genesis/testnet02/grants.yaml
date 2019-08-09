@@ -1,6 +1,6 @@
 # Provides mock system module for 'accounts'
 code: |-
-  (coin.coinbase "croesus" (read-keyset "croesus")   1000000000.0)
+  (coin.coinbase "croesus" (read-keyset "croesus") 9000000000.0)
   (coin.coinbase "sender00" (read-keyset "sender00") 100000000.0)
   (coin.coinbase "sender01" (read-keyset "sender01") 110000000.0)
   (coin.coinbase "sender02" (read-keyset "sender02") 120000000.0)
