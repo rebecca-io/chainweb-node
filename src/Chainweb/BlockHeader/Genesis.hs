@@ -39,7 +39,7 @@ import Chainweb.BlockHeader
 import qualified Chainweb.BlockHeader.Genesis.DevelopmentPayload as D
 import qualified Chainweb.BlockHeader.Genesis.Testnet00Payload as TN0
 import qualified Chainweb.BlockHeader.Genesis.Testnet01Payload as TN1
-import qualified Chainweb.BlockHeader.Genesis.Testnet01Payload as TN2
+import qualified Chainweb.BlockHeader.Genesis.Testnet02Payload as TN2
 import Chainweb.ChainId (ChainId, HasChainId(..), encodeChainId)
 import Chainweb.Crypto.MerkleLog
 import Chainweb.Difficulty (HashTarget, maxTarget)
