@@ -29,6 +29,7 @@ import Control.Exception (bracket, mask_, throw)
 import Control.Monad (unless, void, (<$!>))
 
 import Data.Aeson
+import qualified Data.ByteString.Short as BS
 import Data.Foldable (foldl', foldlM)
 import qualified Data.HashPSQ as PSQ
 import Data.IORef (modifyIORef', newIORef, readIORef, writeIORef)
@@ -103,7 +104,7 @@ toMempoolBackend mempool = do
 
     InMemConfig tcfg blockSizeLimit _ = cfg
     member = memberInMem lockMVar
-    lookup = lookupInMem lockMVar
+    lookup = lookupInMem tcfg lockMVar
     insert = insertInMem cfg lockMVar
     markValidated = markValidatedInMem lockMVar
     getBlock = getBlockInMem cfg lockMVar
@@ -164,17 +165,37 @@ memberInMem lock txs = do
     memberOne q txHash = return $! PSQ.member txHash q
 
 ------------------------------------------------------------------------------
-lookupInMem :: MVar (InMemoryMempoolData t)
+lookupInMem :: TransactionConfig t
+            -> MVar (InMemoryMempoolData t)
             -> Vector TransactionHash
             -> IO (Vector (LookupResult t))
-lookupInMem lock txs = do
+lookupInMem tcfg lock txs = do
     q <- withMVarMasked lock (readIORef . _inmemPending)
-    V.mapM (fmap fromJuste . lookupOne q) txs
+    V.mapM ((fmap fromJuste . lookupOne q)) txs
   where
     lookupOne q txHash = return $! (lookupQ q txHash <|>
                                     pure Missing)
-    lookupQ q txHash = Pending . snd <$> PSQ.lookup txHash q
+    lookupQ q txHash = Pending <$!> do
+        i <- snd <$> PSQ.lookup txHash q
+        dec tcfg i
 
+enc
+    :: TransactionConfig t
+    -> t
+    -> BS.ShortByteString
+enc tcfg = BS.toShort . (codecEncode $ txCodec tcfg)
+{-# INLINE enc #-}
+
+dec
+    :: Monad m
+    => TransactionConfig a
+    -> BS.ShortByteString
+    -> m a
+dec tcfg e = case (codecDecode $ txCodec $ tcfg) (BS.fromShort e) of
+    Left ex -> throw
+        $ EncodeException $ "failed to decode pending transaction: " <> sshow ex <> ". " <> sshow e
+    Right r -> return r
+{-# INLINE dec #-}
 
 ------------------------------------------------------------------------------
 markValidatedInMem :: MVar (InMemoryMempoolData t)
@@ -225,7 +246,7 @@ insertInMem cfg lock txs0 = do
     insOne mdata tx = do
         let !txhash = hasher tx
         modifyIORef' (_inmemPending mdata) $
-           PSQ.insert txhash (getPriority tx) tx
+           PSQ.insert txhash (getPriority tx) (force $ enc txcfg tx)
         return txhash
 
 
@@ -243,8 +264,7 @@ getBlockInMem cfg lock txValidate bheight phash size0 = do
         go mdata psq size0 []
 
   where
-    del !psq tx = let h = hasher tx
-                  in PSQ.delete h psq
+    del !psq tx = PSQ.delete (hasher tx) psq
 
     hasher = txHasher txcfg
     txcfg = _inmemTxCfg cfg
@@ -271,18 +291,19 @@ getBlockInMem cfg lock txValidate bheight phash size0 = do
     getBatch !psq !sz !soFar !inARow
         -- we'll keep looking for transactions until we hit maxInARow that are
         -- too large
-      | inARow >= maxInARow || sz <= 0 = (psq, soFar)
+      | inARow >= maxInARow || sz <= 0 = return (psq, soFar)
       | otherwise =
             case PSQ.minView psq of
-              Nothing -> (psq, soFar)
-              (Just (_, _, tx, !psq')) ->
+              Nothing -> return (psq, soFar)
+              (Just (_, _, etx, !psq')) -> do
+                  !tx <- dec txcfg etx
                   let txSz = getSize tx
-                  in if txSz <= sz
-                       then getBatch psq' (sz - txSz) (tx:soFar) 0
-                       else getBatch psq' sz soFar (inARow + 1)
+                  if txSz <= sz
+                    then getBatch psq' (sz - txSz) (tx:soFar) 0
+                    else getBatch psq' sz soFar (inARow + 1)
 
     go !mdata !psq !remainingGas !soFar = do
-        let (psq', nb) = nextBatch psq remainingGas
+        (psq', nb) <- nextBatch psq remainingGas
         if null nb
           then return $! V.concat soFar
           else do
@@ -329,8 +350,10 @@ getPendingInMem cfg nonce lock since callback = do
     initState = (id, 0)    -- difference list
     hash = txHasher $ _inmemTxCfg cfg
     maxNumRecent = _inmemMaxRecentItems cfg
+    txcfg = _inmemTxCfg cfg
 
-    go (dl, !sz) tx = do
+    go (dl, !sz) etx = do
+        !tx <- dec txcfg etx
         let txhash = hash tx
         let dl' = dl . (txhash:)
         let !sz' = sz + 1

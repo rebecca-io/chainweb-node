@@ -26,6 +26,7 @@ import Control.Concurrent.MVar (MVar)
 import Control.DeepSeq
 
 import Data.Aeson
+import qualified Data.ByteString.Short as BS
 import Data.HashPSQ (HashPSQ)
 import Data.IORef (IORef)
 import Data.Ord (Down(..))
@@ -71,7 +72,7 @@ data InMemoryMempool t = InMemoryMempool {
 ------------------------------------------------------------------------------
 data InMemoryMempoolData t = InMemoryMempoolData {
     _inmemInserted :: {-# UNPACK #-} !(IORef Int)
-  , _inmemPending :: !(IORef (PSQ t))
+  , _inmemPending :: !(IORef (PSQ BS.ShortByteString))
   , _inmemRecentLog :: !(IORef RecentLog)
 }
 
