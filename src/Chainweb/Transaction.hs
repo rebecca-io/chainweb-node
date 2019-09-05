@@ -25,6 +25,7 @@ import qualified Data.Aeson as Aeson
 import Data.Aeson.Types (FromJSON(..), ToJSON(..))
 import Data.Bytes.Get
 import Data.ByteString.Char8 (ByteString)
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Short as SB
 import Data.Text (Text)
 import qualified Data.Text.Encoding as T
@@ -79,7 +80,7 @@ instance Hashable (HashableTrans PayloadWithText) where
 -- | A codec for (Command PayloadWithText) transactions.
 chainwebPayloadCodec :: Codec (Command PayloadWithText)
 chainwebPayloadCodec = Codec
-    (force . SB.fromShort . payloadBytes . _cmdPayload)
+    (force . BL.toStrict . Aeson.encode)
     (force . chainwebPayloadDecode)
 
 chainwebPayloadDecode :: ByteString -> Either String (Command PayloadWithText)
