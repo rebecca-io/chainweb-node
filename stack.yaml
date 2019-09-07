@@ -24,6 +24,7 @@ extra-deps:
   - tls-1.5.1
 
   # --- Forced Downgrades --- #
+  - mwc-probability-2.0.4
   - these-0.8.1
 
   # --- Custom Pins --- #
