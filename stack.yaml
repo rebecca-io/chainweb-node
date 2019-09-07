@@ -16,8 +16,6 @@ extra-deps:
 
   # --- Transitive Pact Dependencies --- #
   - ed25519-donna-0.1.1
-  - megaparsec-6.5.0
-  - neat-interpolation-0.3.2.2  # Due to megaparsec downgrade
   - sbv-8.2
   - swagger2-2.3.1.1
 
@@ -30,7 +28,7 @@ extra-deps:
 
   # --- Custom Pins --- #
   - github: kadena-io/pact
-    commit: 643b8e06a96d6f2e424dcc09849d99fb55e18b82
+    commit: 21fe784fb5b5352124a8533671a289244acab423
   - github: kadena-io/thyme
     commit: 6ee9fcb026ebdb49b810802a981d166680d867c9
   - github: kadena-io/chainweb-storage
