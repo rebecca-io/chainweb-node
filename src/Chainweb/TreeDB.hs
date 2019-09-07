@@ -808,7 +808,9 @@ seekAncestor db h r
         case a of
             [] -> throwM $ TreeDbAncestorMissing @db h (int r)
                 $ "No entry at this rank in the database"
-            [x] -> return $ Just x
+            [x] -> do
+                logg Info $ "seekAncestor fastRoute1 succeeded."
+                return $ Just x
             _ -> fastRoute2 1
 
     hh = rank h
@@ -833,7 +835,9 @@ seekAncestor db h r
             case bs of
                 [] -> throwM $ TreeDbAncestorMissing @db h (int r)
                     $ "Backward search from rank " <> sshow l <> " results"
-                [x] -> return $ Just x
+                [x] -> do
+                    logg Info $ "seekAncestor fastRoute2 succeeded at offset " <> sshow off
+                    return $ Just x
                 _ -> fastRoute2 (succ i)
         | otherwise = slowRoute
       where
@@ -851,7 +855,9 @@ seekAncestor db h r
         case a of
             Nothing -> throwM $ TreeDbAncestorMissing @db h (int r)
                 $ "branch traversal yields no result"
-            x -> return x
+            x -> do
+                logg Info $ "seekAncestor used slow route"
+                return x
 
 -- -------------------------------------------------------------------------- --
 -- Properties
