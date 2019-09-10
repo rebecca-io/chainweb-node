@@ -66,6 +66,7 @@ import Chainweb.Version
 
 import Pact.Parse (ParsedInteger(..))
 import Pact.Types.Gas (GasLimit(..))
+import Pact.Types.Term (PactId(..))
 
 import P2P.Peer
 
@@ -167,6 +168,13 @@ instance ToHttpApiData SomeChainwebVersionT where
 instance ToHttpApiData SomeChainIdT where
     toUrlPiece (SomeChainIdT prox) = chainIdSymbolVal prox
 
+instance ToHttpApiData PactId where
+    toUrlPiece (PactId t) = t
+
+instance FromHttpApiData PactId where
+    parseUrlPiece = return . PactId
+
+
 instance
     (KnownChainwebVersionSymbol sym, HasLink sub)
     => HasLink (sym :> sub)
@@ -253,6 +261,10 @@ instance ToParamSchema ChainId where
     toParamSchema _ = mempty
         & type_ .~ SwaggerInteger
         & format ?~ "word32"
+
+instance ToParamSchema PactId where
+    toParamSchema _ = mempty
+      & type_ .~ SwaggerString
 
 -- FIXME: Invention of new `ChainwebVersion` values will not warn of pattern
 -- match issues here!

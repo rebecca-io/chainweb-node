@@ -16,6 +16,7 @@ data PactExecutionService = PactExecutionService
   { _pactValidateBlock :: BlockHeader -> PayloadData -> IO PayloadWithOutputs
   , _pactNewBlock :: Miner -> BlockHeader -> IO PayloadWithOutputs
   , _pactLocal :: ChainwebTransaction -> IO (Either PactException HashCommandResult)
+  , _pactSpvProof :: PactId -> IO (Either PactException ContProof)
   }
 
 newtype WebPactExecutionService = WebPactExecutionService

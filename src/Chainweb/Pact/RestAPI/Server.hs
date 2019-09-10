@@ -74,6 +74,7 @@ import Chainweb.Version
 import Chainweb.WebPactExecutionService
 
 ------------------------------------------------------------------------------
+
 type PactServerData logger cas =
     (CutResources logger cas, ChainResources logger)
 
@@ -108,11 +109,12 @@ pactServer
     => PayloadCas cas
     => PactServerData logger cas
     -> Server (PactApi v c)
-pactServer (cut, chain) =
-    sendHandler mempool :<|>
-    pollHandler cut cid chain :<|>
-    listenHandler cut cid chain :<|>
-    localHandler cut cid chain
+pactServer (cut, chain)
+    = sendHandler mempool
+    :<|> pollHandler cut cid chain
+    :<|> listenHandler cut cid chain
+    :<|> localHandler cut cid chain
+    :<|> contHandler chain
   where
     cid = FromSing (SChainId :: Sing c)
     mempool = _chainResMempool chain
@@ -120,7 +122,7 @@ pactServer (cut, chain) =
 
 somePactServer :: SomePactServerData -> SomeServer
 somePactServer (SomePactServerData (db :: PactServerData_ v c logger cas))
-    = SomeServer (Proxy @(PactApi v c)) (pactServer @v @c $ _unPactServerData db)
+    = SomeServer (Proxy @(PactServiceApi v c)) (pactServer @v @c $ _unPactServerData db)
 
 
 somePactServers
@@ -226,9 +228,20 @@ localHandler _ _ cr cmd = do
       throwError $ err400 { errBody = "Execution failed: " <> BSL8.pack (show err) }
     (Right !r') -> return r'
 
+contHandler
+    :: forall l cas
+    . CutResources l cas
+    -> ChainId
+    -> ChainResources l
+    -> PactId
+    -> Handler Text
+contHandler cutr cid chr pid = do
 
+  where
+    cdb = _cutResCutDb
 
 ------------------------------------------------------------------------------
+
 internalPoll
     :: PayloadCas cas
     => CutResources logger cas
